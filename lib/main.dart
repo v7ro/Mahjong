@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
-import 'screens/splash_screen.dart';
+import 'screens/loading.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MahjongApp());
 }
 
-class MyApp extends StatelessWidget {
+class MahjongApp extends StatelessWidget {
+  const MahjongApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Mahjong',
-      theme: ThemeData(primarySwatch: Colors.blue),
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: SplashScreen(),
     );
   }
