@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'profile.dart';
 import 'setting.dart';
-import 'PlayingFieldScreen.dart';
+import 'playingfieldscreen.dart';
 import 'rating.dart';
 
 class MainMenuScreen extends StatelessWidget {

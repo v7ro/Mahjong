@@ -1,5 +1,4 @@
 import 'package:mahjong/engine/layouts/layout_precalc.dart';
-import 'package:quiver/core.dart';
 
 class Layout {
   final List<List<List<bool>>> _pieces;
@@ -111,11 +110,13 @@ class Coordinate {
   final int z;
   final int hash;
 
-  Coordinate(this.x, this.y, this.z) : hash = hash3(x, y, z);
+  Coordinate(this.x, this.y, this.z) : hash = Object.hash(x, y, z);
 
+  @override
   bool operator ==(Object other) {
     return other is Coordinate && x == other.x && y == other.y && z == other.z;
   }
 
+  @override
   int get hashCode => hash;
 }

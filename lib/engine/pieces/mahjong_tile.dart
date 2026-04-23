@@ -195,3 +195,6 @@ bool tilesMatch(MahjongTile a, MahjongTile b) {
   if (_flowers.contains(a) && _flowers.contains(b)) return true;
   return false;
 }
+int tileNumber(MahjongTile tile) {
+  return tile.index + 1;   // enum.index считает с 0, так что CHARACTER_1 → 1
+}

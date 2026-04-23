@@ -11,6 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
+  quiver: ^3.2.1
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:
@@ -22,6 +24,7 @@ flutter:
 
   assets:
     - assets/images/backgrounds/
+    - assets/tiles/
 
   fonts:
     - family: Aboreto

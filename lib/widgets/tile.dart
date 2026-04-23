@@ -1,80 +1,35 @@
-import 'package:mahjong/engine/pieces/mahjong_tile.dart';
-import 'package:mahjong/engine/tileset/tileset_meta.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
-
-typedef void Tap();
+import 'package:mahjong/engine/pieces/mahjong_tile.dart';
 
 class Tile extends StatelessWidget {
-  Tile(
-      {key,
-      required this.type,
-      required this.tilesetMeta,
-      required this.selected,
-      this.onTap,
-      this.text,
-      this.dark = false})
-      : super(key: key);
+  final MahjongTile? tile;
+  final bool isSelected;
 
-  final MahjongTile type;
-  final TilesetMeta tilesetMeta;
-  final bool selected;
-  final bool dark;
-  final Tap? onTap;
-  final String? text;
+  const Tile({super.key, this.tile, this.isSelected = false});
 
   @override
   Widget build(BuildContext context) {
-    final baseUrl =
-        'assets/tilesets/${basenameWithoutExtension(tilesetMeta.fileName)}';
-
-    final number = tileNumber(type);
-    final imagePath = 'assets/titles/Прямоугольник $number.png';
-
-    return tapable(
-        onTap,
-        Image.asset(
-          imagePath,
-          width: 50,    // задай нужный размер
-          height: 60,
-          fit: BoxFit.contain,
-        ));
-      }
-
-  Widget darken(bool darken, Widget child) {
-    if (!darken) return child;
-    return ColorFiltered(
-      child: child,
-      colorFilter: darkenFilter,
+    if (tile == null) return const SizedBox(width: 50, height: 60);
+    // Функция, которая возвращает номер картинки (1..42)
+    final number = _tileNumber(tile!);
+    final imagePath = 'assets/tiles/Прямоугольник $number.png';
+    return Container(
+      width: 50,
+      height: 60,
+      margin: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        border: isSelected ? Border.all(color: Colors.yellow, width: 3) : null,
+      ),
+      child: Image.asset(
+        imagePath,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => Center(child: Text('$number')),
+      ),
     );
   }
 
-  Widget tapable(Tap? onTap, Widget child) {
-    if (onTap == null) return child;
-    return GestureDetector(onTap: onTap, child: child);
+  int _tileNumber(MahjongTile tile) {
+    // маппинг MahjongTile -> номер (1..42) по порядку enum
+    return tile.index + 1;
   }
-
-  static const ColorFilter darkenFilter = ColorFilter.matrix(<double>[
-    0.5,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0.5,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0.5,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    0,
-  ]);
 }

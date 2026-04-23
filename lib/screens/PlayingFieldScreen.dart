@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:mahjong/engine/layouts/layout.dart';
+import 'package:mahjong/engine/layouts/top_down_generator.dart';
+import 'package:mahjong/engine/pieces/game_board.dart';
+import 'package:mahjong/extensions/game_board_ext.dart';
+import 'package:mahjong/widgets/board.dart';
 import 'setting.dart';
-import '../game_board.dart';
-import '../widgets/game_board_widget.dart';
 
 class PlayingFieldScreen extends StatefulWidget {
   const PlayingFieldScreen({super.key});
@@ -12,26 +15,61 @@ class PlayingFieldScreen extends StatefulWidget {
 
 class _PlayingFieldScreenState extends State<PlayingFieldScreen> {
   static const Color burgundy = Color(0xFF6B1F2B);
-  late GameBoard gameBoard;
-  Tile? selectedTile;
+  late GameBoard _board;
+  Coordinate? _selectedCoord;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    gameBoard = GameBoard();
+    _initGame();
   }
 
-  void onTileTap(Tile tile) {
+  void _initGame() {
+    try {
+      // Простая форма пирамиды 3 слоя, 6x8 (можно изменить)
+      final layout = Layout(_createPieces());
+      final precalc = layout.getPrecalc();
+      final board = makeBoard(layout, precalc);
+      setState(() {
+        _board = board;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Ошибка генерации: $e');
+      setState(() => _isLoading = false);
+    }
+  }
+
+  List<List<List<bool>>> _createPieces() {
+    const layers = 3;
+    const rows = 6;
+    const cols = 8;
+    final pieces = List.generate(
+      layers,
+      (z) => List.generate(rows, (y) => List.filled(cols, false)),
+    );
+    for (int z = 0; z < layers; z++) {
+      for (int y = z; y < rows - z; y++) {
+        for (int x = z; x < cols - z; x++) {
+          pieces[z][y][x] = true;
+        }
+      }
+    }
+    return pieces;
+  }
+
+  void _onTileTap(Coordinate coord) {
     setState(() {
-      if (selectedTile == null) {
-        selectedTile = tile;
+      if (_selectedCoord == null) {
+        _selectedCoord = coord;
       } else {
-        if (gameBoard.tryRemovePair(selectedTile!, tile)) {
-          if (gameBoard.isWin()) {
+        if (_board.tryRemovePair(_selectedCoord!, coord)) {
+          if (_board.isWin()) {
             _showWinDialog();
           }
         }
-        selectedTile = null;
+        _selectedCoord = null;
       }
     });
   }
@@ -47,8 +85,8 @@ class _PlayingFieldScreenState extends State<PlayingFieldScreen> {
             onPressed: () {
               Navigator.pop(context);
               setState(() {
-                gameBoard = GameBoard();
-                selectedTile = null;
+                _initGame(); // новая игра
+                _selectedCoord = null;
               });
             },
             child: const Text('Новая игра'),
@@ -60,6 +98,9 @@ class _PlayingFieldScreenState extends State<PlayingFieldScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -73,7 +114,6 @@ class _PlayingFieldScreenState extends State<PlayingFieldScreen> {
       ),
       body: Stack(
         children: [
-          // ФОН
           Positioned.fill(
             child: Opacity(
               opacity: 0.7,
@@ -83,20 +123,18 @@ class _PlayingFieldScreenState extends State<PlayingFieldScreen> {
               ),
             ),
           ),
-          // ИГРОВОЕ ПОЛЕ (адаптивно)
           Center(
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: GameBoardWidget(
-                  board: gameBoard,
-                  onTileTap: onTileTap,
-                  selectedTile: selectedTile,
+                child: Board(
+                  board: _board,
+                  selectedCoord: _selectedCoord,
+                  onTileTap: _onTileTap,
                 ),
               ),
             ),
           ),
-          // КНОПКА НАСТРОЕК
           Positioned(
             right: 16,
             top: 44,
