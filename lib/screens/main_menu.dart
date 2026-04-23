@@ -18,7 +18,7 @@ class MainMenuScreen extends StatelessWidget {
 /// ФОН
           Positioned.fill(
             child: Image.asset(
-              'assets/images/main_window.jpeg',
+              'assets/images/backgrounds/main_window.jpeg',
               fit: BoxFit.cover,
             ),
           ),
@@ -127,7 +127,7 @@ class MainMenuScreen extends StatelessWidget {
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         image: DecorationImage(
-                          image: AssetImage('assets/images/profile.JPEG'),
+                          image: AssetImage('assets/images/backgrounds/profile.JPEG'),
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -172,7 +172,7 @@ class MainMenuScreen extends StatelessWidget {
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         image: DecorationImage(
-                          image: AssetImage('assets/images/setting.PNG'),
+                          image: AssetImage('assets/images/backgrounds/setting.PNG'),
                           fit: BoxFit.cover,
                         ),
                       ),

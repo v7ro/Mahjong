@@ -29,7 +29,7 @@ class ProfileScreen extends StatelessWidget {
             child: Opacity(
               opacity: 0.7,
               child: Image.asset(
-                'assets/images/profile.jpg',
+                'assets/images/backgrounds/profile_bg.jpeg',
                 fit: BoxFit.cover,
               ),
             ),

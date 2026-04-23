@@ -113,7 +113,7 @@ class _SettingScreenState extends State<SettingScreen> {
             child: Opacity(
               opacity: 0.8,
               child: Image.asset(
-                'assets/images/setting1.jpg',
+                'assets/images/backgrounds/setting_bg.jpeg',
                 fit: BoxFit.cover,
               ),
             ),

@@ -29,7 +29,7 @@ class RatingScreen extends StatelessWidget {
             child: Opacity(
               opacity: 0.8,
               child: Image.asset(
-                'assets/images/rating.jpg',
+                'assets/images/backgrounds/rating.jpeg',
                 fit: BoxFit.cover,
               ),
             ),

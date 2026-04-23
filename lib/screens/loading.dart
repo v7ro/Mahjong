@@ -61,7 +61,7 @@ class _SplashScreenState extends State<SplashScreen>
 ///ФОН
           Positioned.fill(
             child: Image.asset(
-              'assets/images/loading.jpg',
+              'assets/images/backgrounds/loading.jpeg',
               fit: BoxFit.cover,
             ),
           ),
