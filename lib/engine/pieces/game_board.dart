@@ -98,7 +98,7 @@ class GameBoard {
     for (var coords in byType.values) {
       if (coords.length == 1) continue;
       for (var i = 0; i < coords.length - 1; ++i) {
-        for (var j = i + 1; i < coords.length; ++i) {
+        for (var j = i + 1; j < coords.length; ++j) {
           ret.add(MapEntry(coords[i], coords[j]));
         }
       }
