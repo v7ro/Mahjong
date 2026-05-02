@@ -47,15 +47,11 @@ class LayoutPrecalc {
       final z = coord.z;
 
       var lefts = ([
-        coordToIdx(Coordinate(x - 2, y - 1, z)),
         coordToIdx(Coordinate(x - 2, y, z)),
-        coordToIdx(Coordinate(x - 2, y + 1, z))
       ]).where((idx) => idx != -1).toSet();
       this.neighborsLeft[idx] = lefts;
       var right = ([
-        coordToIdx(Coordinate(x + 2, y - 1, z)),
         coordToIdx(Coordinate(x + 2, y, z)),
-        coordToIdx(Coordinate(x + 2, y + 1, z))
       ]).where((idx) => idx != -1).toSet();
       this.neighborsRight[idx] = right;
       var top = ([
