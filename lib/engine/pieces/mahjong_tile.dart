@@ -67,13 +67,6 @@ bool isSeason(MahjongTile tile) =>
   tile == MahjongTile.SEASON_1 || tile == MahjongTile.SEASON_2 ||
   tile == MahjongTile.SEASON_3 || tile == MahjongTile.SEASON_4;
 
-bool doMatch(MahjongTile a, MahjongTile b) {
-  if (a == b) return true;
-  if (isFlower(a) && isFlower(b)) return true;
-  if (isSeason(a) && isSeason(b)) return true;
-  return false;
-}
-
 const _EnumName = "MahjongTile";
 const _EnumNameLength = _EnumName.length;
 
@@ -86,19 +79,10 @@ final _stringToTile = Map.fromEntries(
 String tileToString(MahjongTile tile) => _tileToString[tile]!;
 MahjongTile stringToTile(String str) => _stringToTile[str]!;
 
-Set<MahjongTile> _flowers = {
-  MahjongTile.FLOWER_1, MahjongTile.FLOWER_2,
-  MahjongTile.FLOWER_3, MahjongTile.FLOWER_4,
-};
-Set<MahjongTile> _season = {
-  MahjongTile.SEASON_1, MahjongTile.SEASON_2,
-  MahjongTile.SEASON_3, MahjongTile.SEASON_4,
-};
-
 bool tilesMatch(MahjongTile a, MahjongTile b) {
   if (a == b) return true;
-  if (_season.contains(a) && _season.contains(b)) return true;
-  if (_flowers.contains(a) && _flowers.contains(b)) return true;
+  if (isFlower(a) && isFlower(b)) return true;
+  if (isSeason(a) && isSeason(b)) return true;
   return false;
 }
 

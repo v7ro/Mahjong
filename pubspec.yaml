@@ -1,7 +1,6 @@
 name: mahjong
 description: "A new Flutter project."
 publish_to: 'none'
-
 version: 1.0.0+1
 
 environment:
@@ -13,6 +12,12 @@ dependencies:
   cupertino_icons: ^1.0.8
   quiver: ^3.2.1
   shared_preferences: ^2.2.2
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
+  google_sign_in: ^6.2.1
+  sign_in_with_apple: ^6.1.1
+  crypto: ^3.0.3
 
 dev_dependencies:
   flutter_test:
@@ -21,13 +26,11 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
   assets:
     - assets/images/backgrounds/
     - assets/button/
     - assets/images/button/
     - assets/tiles/
-
   fonts:
     - family: Aboreto
       fonts:

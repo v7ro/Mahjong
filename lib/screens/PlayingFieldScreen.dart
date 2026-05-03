@@ -8,6 +8,8 @@ import 'package:mahjong/engine/pieces/game_board.dart';
 import 'package:mahjong/engine/pieces/mahjong_tile.dart';
 import 'package:mahjong/extensions/game_board_ext.dart';
 import 'setting.dart';
+import '../services/firebase_service.dart';
+import '../services/game_prefs.dart';
 
 // ─────────────────────────────────────────────────────────────
 //  КОНСТАНТЫ РАЗМЕРОВ
@@ -154,7 +156,8 @@ class _State extends State<PlayingFieldScreen> with TickerProviderStateMixin {
   AnimationController? _shuffleCtrl;
 
   Coordinate? _hA, _hB;
-  int _score=0, _secs=0; Timer? _timer;
+  int _score=0, _secs=0, _wrongTaps=0, _pairsRemoved=0; Timer? _timer;
+  int _hintsLeft=3;
   final List<_Move> _hist=[];
   final _key=GlobalKey();
 
@@ -206,11 +209,16 @@ class _State extends State<PlayingFieldScreen> with TickerProviderStateMixin {
       _hA=null; _hB=null; _matchA=null; _matchB=null;
       _wrong=null; _shake=null; _mis=null;
       _shuffling=false; _shuffleOverlay=false;
-      _hist.clear(); _score=0; _secs=0;
+      _hist.clear(); _score=0; _secs=0; _wrongTaps=0; _pairsRemoved=0;
     });
     _timer?.cancel(); _wrongT?.cancel();
     for(final c in [_matchCtrl,_shakeCtrl,_misCtrl,_shuffleCtrl]){ c?.dispose(); }
     _matchCtrl=null; _shakeCtrl=null; _misCtrl=null; _shuffleCtrl=null;
+  }
+
+  Future<void> _loadHints() async {
+    final h = await GamePrefs().hintsLeft;
+    if (mounted) setState(() => _hintsLeft = h);
   }
 
   void _startTimer(){
@@ -294,9 +302,20 @@ class _State extends State<PlayingFieldScreen> with TickerProviderStateMixin {
     if(!tilesMatch(ta,tb)){ _animShake(a,false); HapticFeedback.heavyImpact(); return; }
     _animMatch(a,b,(){
       _board.update((t){t[a.z][a.y][a.x]=null;t[b.z][b.y][b.x]=null;});
-      _hist.add(_Move(a,ta,b,tb)); _score+=10;
+      _hist.add(_Move(a,ta,b,tb));
+      _pairsRemoved++;
+      _score = GamePrefs.calcScore(
+        pairsRemoved: _pairsRemoved,
+        secondsElapsed: _secs,
+        wrongTaps: _wrongTaps,
+      );
       HapticFeedback.lightImpact();
-      if(_board.isWin()){ _timer?.cancel(); _save=null; WidgetsBinding.instance.addPostFrameCallback((_)=>_winDlg()); }
+      if(_board.isWin()){
+        _timer?.cancel(); _save=null;
+        FirebaseService().saveScore(_score);
+        GamePrefs().onLevelComplete().then((_)=>_loadHints());
+        WidgetsBinding.instance.addPostFrameCallback((_)=>_winDlg());
+      }
       else if(!_hasMoves()) WidgetsBinding.instance.addPostFrameCallback((_)=>_autoShuffle());
       if(mounted) setState((){});
     });
@@ -336,6 +355,14 @@ class _State extends State<PlayingFieldScreen> with TickerProviderStateMixin {
 
   void _hint(){
     if(_shuffling) return;
+    if(_hintsLeft<=0){
+      if(mounted) ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content:Text('Нет подсказок! Пройди уровень чтобы получить ещё.')));
+      return;
+    }
+    GamePrefs().useHint().then((ok){
+      if(ok&&mounted) setState(()=>_hintsLeft=(_hintsLeft-1).clamp(0,99));
+    });
     final mv=_board.movable.toList();
     for(int i=0;i<mv.length;i++) for(int j=i+1;j<mv.length;j++){
       final ta=_board.tiles[mv[i].z][mv[i].y][mv[i].x];
@@ -442,14 +469,13 @@ class _State extends State<PlayingFieldScreen> with TickerProviderStateMixin {
       ),
     ))),
     // Кнопки
-    SafeArea(top:false,child:Padding(
-      padding:const EdgeInsets.fromLTRB(20,10,20,16),
-      child:Row(children:[
-        Expanded(child:_Btn(asset:'assets/button/return.png', fallback:Icons.undo_rounded,    enabled:_hist.isNotEmpty,onTap:_undo)),
-        const SizedBox(width:16),
-        Expanded(child:_Btn(asset:'assets/button/help.png',   fallback:Icons.lightbulb_rounded,enabled:true,            onTap:_hint)),
-        const SizedBox(width:16),
-        Expanded(child:_Btn(asset:'assets/button/shuffle.png',fallback:Icons.shuffle_rounded,  enabled:!_shuffling,     onTap:_manualShuffle)),
+    SafeArea(top:false,child:Container(
+      color:Colors.black.withOpacity(0.55),
+      padding:const EdgeInsets.symmetric(horizontal:8,vertical:8),
+      child:Row(mainAxisAlignment:MainAxisAlignment.spaceAround,children:[
+        _SimpleBtn(icon:Icons.undo_rounded,      label:'отмена',     enabled:_hist.isNotEmpty, onTap:_undo),
+        _SimpleHintBtn(icon:Icons.lightbulb_outline, label:'подсказка', enabled:true, count:_hintsLeft, onTap:_hint),
+        _SimpleBtn(icon:Icons.shuffle_rounded,   label:'перемешать', enabled:!_shuffling,      onTap:_manualShuffle),
       ]),
     )),
   ]);
@@ -758,6 +784,76 @@ class _Btn extends StatelessWidget {
         child:Center(child:Image.asset(asset,width:46,height:46,
           errorBuilder:(_,__,___)=>Icon(fallback,color:Colors.white,size:38)))))));
 }
+class _BtnHint extends StatelessWidget {
+  final String asset; final IconData fallback; final bool enabled;
+  final int count; final VoidCallback onTap;
+  const _BtnHint({required this.asset,required this.fallback,required this.enabled,
+    required this.count,required this.onTap});
+  @override Widget build(BuildContext c)=>GestureDetector(
+    onTap:enabled?onTap:null,behavior:HitTestBehavior.opaque,
+    child:Opacity(opacity:enabled?1.0:0.35,
+      child:Stack(clipBehavior:Clip.none,children:[
+        AspectRatio(aspectRatio:1.0,child:Container(
+          decoration:BoxDecoration(
+            color:Colors.black.withOpacity(0.15),
+            borderRadius:BorderRadius.circular(16),
+            border:Border.all(color:kBurgundy,width:4.0)),
+          child:Center(child:Image.asset(asset,width:46,height:46,
+            errorBuilder:(_,__,___)=>Icon(fallback,color:Colors.white,size:38))))),
+        Positioned(top:-4,right:-4,child:Container(
+          padding:const EdgeInsets.symmetric(horizontal:6,vertical:2),
+          decoration:BoxDecoration(color:kBurgundy,borderRadius:BorderRadius.circular(10)),
+          child:Text('$count',style:const TextStyle(color:Colors.white,fontSize:11,fontWeight:FontWeight.bold)))),
+      ])));
+}
+
+// Простая кнопка: иконка + подпись
+class _SimpleBtn extends StatelessWidget {
+  final IconData icon; final String label;
+  final bool enabled; final VoidCallback onTap;
+  const _SimpleBtn({required this.icon,required this.label,
+    required this.enabled,required this.onTap});
+  @override Widget build(BuildContext ctx) => GestureDetector(
+    onTap: enabled ? onTap : null,
+    behavior: HitTestBehavior.opaque,
+    child: Opacity(opacity: enabled ? 1.0 : 0.35,
+      child: Padding(padding: const EdgeInsets.symmetric(horizontal:8,vertical:4),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Icon(icon, color: Colors.white, size: 28),
+          const SizedBox(height:3),
+          Text(label, style: const TextStyle(
+            color: Colors.white, fontSize: 11, letterSpacing: 0.3)),
+        ]))));
+}
+
+// Кнопка подсказки со счётчиком
+class _SimpleHintBtn extends StatelessWidget {
+  final IconData icon; final String label;
+  final bool enabled; final int count; final VoidCallback onTap;
+  const _SimpleHintBtn({required this.icon,required this.label,
+    required this.enabled,required this.count,required this.onTap});
+  @override Widget build(BuildContext ctx) => GestureDetector(
+    onTap: enabled ? onTap : null,
+    behavior: HitTestBehavior.opaque,
+    child: Opacity(opacity: enabled ? 1.0 : 0.35,
+      child: Padding(padding: const EdgeInsets.symmetric(horizontal:8,vertical:4),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Stack(clipBehavior: Clip.none, children: [
+            Icon(icon, color: Colors.white, size: 28),
+            Positioned(top:-4,right:-8,child: Container(
+              padding: const EdgeInsets.symmetric(horizontal:5,vertical:1),
+              decoration: BoxDecoration(
+                color: kBurgundy, borderRadius: BorderRadius.circular(8)),
+              child: Text('$count', style: const TextStyle(
+                color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)))),
+          ]),
+          const SizedBox(height:3),
+          Text(label, style: const TextStyle(
+            color: Colors.white, fontSize: 11, letterSpacing: 0.3)),
+        ]))));
+}
+
+
 class _Badge extends StatelessWidget {
   final IconData icon; final String label;
   const _Badge({required this.icon,required this.label});

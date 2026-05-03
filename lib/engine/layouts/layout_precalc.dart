@@ -54,28 +54,19 @@ class LayoutPrecalc {
         coordToIdx(Coordinate(x + 2, y, z)),
       ]).where((idx) => idx != -1).toSet();
       this.neighborsRight[idx] = right;
+      // Плитка занимает x..x+1 по X, 1 по Y.
+      // Верхняя плитка (z+1) перекрывает если x-диапазоны пересекаются
+      // И та же строка y. Проверяем x-1,x,x+1 но только y (не y±1).
       var top = ([
-        coordToIdx(Coordinate(x - 1, y - 1, z + 1)),
         coordToIdx(Coordinate(x - 1, y, z + 1)),
-        coordToIdx(Coordinate(x - 1, y + 1, z + 1)),
-        coordToIdx(Coordinate(x, y - 1, z + 1)),
-        coordToIdx(Coordinate(x, y, z + 1)),
-        coordToIdx(Coordinate(x, y + 1, z + 1)),
-        coordToIdx(Coordinate(x + 1, y - 1, z + 1)),
+        coordToIdx(Coordinate(x,     y, z + 1)),
         coordToIdx(Coordinate(x + 1, y, z + 1)),
-        coordToIdx(Coordinate(x + 1, y + 1, z + 1)),
       ]).where((idx) => idx != -1).toSet();
       this.above[idx] = top;
       var bottom = ([
-        coordToIdx(Coordinate(x - 1, y - 1, z - 1)),
         coordToIdx(Coordinate(x - 1, y, z - 1)),
-        coordToIdx(Coordinate(x - 1, y + 1, z - 1)),
-        coordToIdx(Coordinate(x, y - 1, z - 1)),
-        coordToIdx(Coordinate(x, y, z - 1)),
-        coordToIdx(Coordinate(x, y + 1, z - 1)),
-        coordToIdx(Coordinate(x + 1, y - 1, z - 1)),
+        coordToIdx(Coordinate(x,     y, z - 1)),
         coordToIdx(Coordinate(x + 1, y, z - 1)),
-        coordToIdx(Coordinate(x + 1, y + 1, z - 1)),
       ]).where((idx) => idx != -1).toSet();
       this.below[idx] = bottom;
     }
