@@ -1,17 +1,71 @@
-# mahjong
+# Mahjong Solitaire
 
-A new Flutter project.
+Flutter-приложение для Android и iOS.
 
-## Getting Started
+## Стек
 
-This project is a starting point for a Flutter application.
+- Flutter 3.x / Dart 3.x
+- Firebase Auth — email, Google, Apple
+- Cloud Firestore — рейтинг, история
+- Firebase Cloud Messaging — пуш-уведомления
+- shared_preferences — настройки
 
-A few resources to get you started if this is your first Flutter project:
+## Запуск
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```bash
+flutter pub get
+flutter run
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Требует `google-services.json` в `android/app/`  
+и `GoogleService-Info.plist` в `ios/Runner/`.
+
+## Безопасность
+
+Добавь в `.gitignore` (уже добавлено):
+- `lib/firebase_options.dart`
+- `android/app/google-services.json`
+- `ios/Runner/GoogleService-Info.plist`
+
+## Где хранятся пароли
+
+Firebase Auth — на серверах Google, хэшированные.  
+Ты к ним не имеешь доступа. Это стандарт.  
+В Firebase Console → Authentication → Users видишь только email и uid.
+
+## Пуш-уведомления
+
+Настраиваются в Firebase Console → Cloud Messaging.  
+Создай кампанию → выбери аудиторию → расписание.  
+Например: "Заходи в игру, мы тебя ждём!" раз в неделю.
+
+## Правила Firestore
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    match /users/{uid} {
+      allow read: if request.auth != null;
+      allow write: if request.auth.uid == uid;
+      match /history/{h} {
+        allow read, write: if request.auth.uid == uid;
+      }
+    }
+    match /scores_monthly/{month}/users/{uid} {
+      allow read: if request.auth != null;
+      allow write: if request.auth.uid == uid;
+    }
+  }
+}
+```
+
+## Очки
+
+`пары × 10 − время/30 − ошибки × 2 + бонус за скорость`  
+Подсказка: −10, Перемешать: −20, Отмена: −5
+
+## Генерация уровней
+
+8 алгоритмов × случайные параметры = тысячи уникальных форм.  
+Каждая игра гарантированно решаема.

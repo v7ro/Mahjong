@@ -1,201 +1,234 @@
 import 'package:flutter/material.dart';
-
+import 'dart:math' as math;
+import '../l10n.dart';
 import 'profile.dart';
 import 'setting.dart';
 import 'PlayingFieldScreen.dart';
 import 'rating.dart';
 
-class MainMenuScreen extends StatelessWidget {
+class MainMenuScreen extends StatefulWidget {
   const MainMenuScreen({super.key});
+  @override State<MainMenuScreen> createState() => _State();
+}
 
-  static const Color burgundy = Color(0xFF6B1F2B);
+class _State extends State<MainMenuScreen>
+    with TickerProviderStateMixin {
+  static const Color kBurgundy = Color(0xFF6B1F2B);
+
+  late AnimationController _floatCtrl;
+  late AnimationController _pressStart;
+  late AnimationController _pressRating;
+  bool _hoverStart = false;
+  bool _hoverRating = false;
+
+  @override
+  void initState() {
+    super.initState();
+    AppLocale().addListener(() { if (mounted) setState(() {}); });
+
+    // Парящие плитки на фоне
+    _floatCtrl = AnimationController(
+      vsync: this, duration: const Duration(seconds: 6))
+      ..repeat();
+
+    // Эффект нажатия кнопок
+    _pressStart = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 120),
+      lowerBound: 0.0, upperBound: 0.05);
+    _pressRating = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 120),
+      lowerBound: 0.0, upperBound: 0.05);
+  }
+
+  @override
+  void dispose() {
+    _floatCtrl.dispose();
+    _pressStart.dispose();
+    _pressRating.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
-      body: Stack(
-        children: [
-/// ФОН
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/backgrounds/main_window.jpeg',
-              fit: BoxFit.cover,
-            ),
-          ),
+      body: Stack(children: [
+        // Фон
+        Positioned.fill(child: Image.asset(
+          'assets/images/backgrounds/main_window.jpeg', fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+            Container(color: const Color(0xFF1a0a05)))),
 
-/// MAHJONG
-          const Positioned(
-            left: 91,
-            top: 260,
-            child: Text(
-              'MAHJONG',
-              style: TextStyle(
-                fontSize: 40,
-                fontFamily: 'Aboreto',
-                color: burgundy,
-              ),
-            ),
-          ),
+        // Парящие плитки/иероглифы на фоне
+        ..._floatingDecorations(size),
 
-/// КНОПКА LEVEL
-          Positioned(
-            left: 17,
-            top: 401,
-            child: GestureDetector(
-              onTap: () {
-              	Navigator.push(
-                  	context,
-                  	MaterialPageRoute(
-                    	builder: (context) => const PlayingFieldScreen(),
-                  	),
-                	);
-	},
-              child: Container(
-                width: 360,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: burgundy.withOpacity(0.62),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                alignment: Alignment.center,
-                child: const Text(
-                  'LEVEL ...',
+        // MAHJONG лого с плавным появлением
+        Positioned(left: 0, right: 0, top: 250,
+          child: AnimatedBuilder(
+            animation: _floatCtrl,
+            builder: (_, __) {
+              final breath = 1.0 + 0.03 * math.sin(_floatCtrl.value * math.pi * 2);
+              return Transform.scale(scale: breath,
+                child: const Center(child: Text('MAHJONG',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 36,
-                    letterSpacing: 1.5,
-                    fontFamily: 'Aboreto',
-                  ),
-                ),
-              ),
-            ),
-          ),
+                    fontSize: 44, fontFamily: 'Aboreto',
+                    color: kBurgundy, letterSpacing: 4,
+                    shadows: [
+                      Shadow(color: Color(0x55000000),
+                        blurRadius: 10, offset: Offset(0, 3))
+                    ]))));
+            })),
 
-/// КНОПКА RATING
-          Positioned(
-            left: 50,
-            top: 783,
-            child: GestureDetector(
-              onTap: () {
-              	Navigator.push(
-                  	context,
-                  	MaterialPageRoute(
-                    	builder: (context) => const RatingScreen(),
-                  	),
-                	);
-	},
-              child: Container(
-                width: 300,
-                height: 45,
-                decoration: BoxDecoration(
-                  color: burgundy.withOpacity(0.62),
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                alignment: Alignment.center,
-                child: const Text(
-                  'RATING',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 32,
-                    letterSpacing: 1.5,
-                    fontFamily: 'Aboreto',
-                  ),
-                ),
-              ),
-            ),
-          ),
+        // Кнопка START / НАЧАТЬ — объёмная с тенью
+        Positioned(left: 17, right: 17, top: 400,
+          child: _bigButton(
+            label: tr('НАЧАТЬ', 'START'),
+            onTap: () {
+              _pressStart.forward().then((_) => _pressStart.reverse());
+              Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const PlayingFieldScreen()));
+            },
+            ctrl: _pressStart,
+            fontSize: 36,
+            height: 64)),
 
-///КНОПКА PROFILE
-          Positioned(
-            left: 17,
-            top: 43,
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProfileScreen(),
-                  ),
-                );
-              },
-              child: SizedBox(
-                width: 72,
-                height: 72,
-                child: Stack(
-                  children: [
-                    Container(
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: DecorationImage(
-                          image: AssetImage('assets/images/backgrounds/profile.JPEG'),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0x66454545),
-                      ),
-                    ),
-                    Container(
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0x33FFFFFF),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+        // Кнопка РЕЙТИНГ — объёмная
+        Positioned(left: 50, right: 50, top: 650,
+          child: _bigButton(
+            label: tr('РЕЙТИНГ', 'RATING'),
+            onTap: () {
+              _pressRating.forward().then((_) => _pressRating.reverse());
+              Navigator.push(context,
+                MaterialPageRoute(builder: (_) => const RatingScreen()));
+            },
+            ctrl: _pressRating,
+            fontSize: 30,
+            height: 52)),
 
-///КНОПКА SETTINGS
-          Positioned(
-            left: 307,
-            top: 44,
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SettingScreen(),
-                  ),
-                );
-              },
-              child: SizedBox(
-                width: 72,
-                height: 72,
-                child: Stack(
-                  children: [
-                    Container(
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: DecorationImage(
-                          image: AssetImage('assets/images/backgrounds/setting.PNG'),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0x66454545),
-                      ),
-                    ),
-                    Container(
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0x33FFFFFF),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+        // PROFILE — с лёгким покачиванием
+        Positioned(left: 17, top: 43,
+          child: AnimatedBuilder(
+            animation: _floatCtrl,
+            builder: (_, __) {
+              final rot = 0.05 * math.sin(_floatCtrl.value * math.pi * 2);
+              return Transform.rotate(angle: rot,
+                child: _iconButton('assets/images/backgrounds/profile.JPEG',
+                  () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const ProfileScreen()))));
+            })),
+
+        // SETTINGS — крутится медленно
+        Positioned(right: 17, top: 44,
+          child: AnimatedBuilder(
+            animation: _floatCtrl,
+            builder: (_, __) {
+              return Transform.rotate(angle: _floatCtrl.value * 0.3,
+                child: _iconButton('assets/images/backgrounds/setting.PNG',
+                  () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const SettingScreen()))));
+            })),
+      ]));
+  }
+
+  Widget _bigButton({
+    required String label, required VoidCallback onTap,
+    required AnimationController ctrl,
+    required double fontSize, required double height}) {
+    return GestureDetector(
+      onTap: onTap,
+      onTapDown: (_) => ctrl.forward(),
+      onTapUp: (_) => ctrl.reverse(),
+      onTapCancel: () => ctrl.reverse(),
+      child: AnimatedBuilder(
+        animation: ctrl,
+        builder: (_, __) {
+          final pressed = ctrl.value;
+          return Transform.translate(
+            offset: Offset(0, pressed * 60),
+            child: Container(
+              height: height,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color.lerp(const Color(0xFF8B2A3B), kBurgundy, 0.0)!,
+                    kBurgundy,
+                    const Color(0xFF4A1520),
+                  ]),
+                borderRadius: BorderRadius.circular(32),
+                border: Border.all(
+                  color: const Color(0x55FFFFFF), width: 1.5),
+                boxShadow: [
+                  // Большая тень внизу — объём
+                  BoxShadow(
+                    color: const Color(0xFF3A0F18),
+                    offset: Offset(0, 6 - pressed * 120),
+                    blurRadius: 0,
+                    spreadRadius: -2),
+                  // Размытая тень для глубины
+                  BoxShadow(
+                    color: const Color(0x66000000),
+                    offset: Offset(0, 10 - pressed * 200),
+                    blurRadius: 16,
+                    spreadRadius: -4),
+                  // Внутренний блик сверху
+                  const BoxShadow(
+                    color: Color(0x33FFFFFF),
+                    offset: Offset(0, -1),
+                    blurRadius: 0,
+                    spreadRadius: -2),
+                ]),
+              alignment: Alignment.center,
+              child: Text(label,
+                style: TextStyle(
+                  color: Colors.white, fontSize: fontSize,
+                  letterSpacing: 3.0, fontFamily: 'Cormorant',
+                  fontWeight: FontWeight.bold,
+                  shadows: const [
+                    Shadow(color: Color(0xAA000000),
+                      blurRadius: 4, offset: Offset(0, 2))
+                  ]))));
+        }));
+  }
+
+  Widget _iconButton(String asset, VoidCallback onTap) =>
+    GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 72, height: 72,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          image: DecorationImage(
+            image: AssetImage(asset), fit: BoxFit.cover),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x66000000),
+              blurRadius: 12, offset: Offset(0, 4))
+          ]),
+        child: Container(decoration: const BoxDecoration(
+          shape: BoxShape.circle, color: Color(0x44000000)))));
+
+  // Парящие декорации на фоне
+  List<Widget> _floatingDecorations(Size size) {
+    final symbols = ['麻', '將', '中', '發', '東', '南', '西', '北'];
+    return List.generate(8, (i) {
+      return AnimatedBuilder(
+        animation: _floatCtrl,
+        builder: (_, __) {
+          final t = (_floatCtrl.value + i * 0.13) % 1.0;
+          final startX = (i * 67) % size.width;
+          final dx = startX + math.sin(t * math.pi * 2 + i) * 20;
+          final dy = size.height * t - 80;
+          return Positioned(
+            left: dx, top: dy,
+            child: Opacity(
+              opacity: 0.08,
+              child: Text(symbols[i],
+                style: TextStyle(
+                  fontSize: 50 + (i % 3) * 10.0,
+                  color: kBurgundy))));
+        });
+    });
   }
 }
