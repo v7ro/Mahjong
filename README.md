@@ -20,19 +20,6 @@ flutter run
 Требует `google-services.json` в `android/app/`  
 и `GoogleService-Info.plist` в `ios/Runner/`.
 
-## Безопасность
-
-Добавь в `.gitignore` (уже добавлено):
-- `lib/firebase_options.dart`
-- `android/app/google-services.json`
-- `ios/Runner/GoogleService-Info.plist`
-
-## Где хранятся пароли
-
-Firebase Auth — на серверах Google, хэшированные.  
-Ты к ним не имеешь доступа. Это стандарт.  
-В Firebase Console → Authentication → Users видишь только email и uid.
-
 ## Пуш-уведомления
 
 Настраиваются в Firebase Console → Cloud Messaging.  
