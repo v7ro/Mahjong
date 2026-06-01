@@ -67,7 +67,7 @@ class _State extends State<ProfileScreen> {
         title: Text(
           tr('ПРОФИЛЬ', 'PROFILE'),
           style: const TextStyle(
-            fontFamily: 'Cormorant', fontSize: 30,
+            fontFamily: 'Forum', fontSize: 30,
             color: kBurgundy, fontWeight: FontWeight.bold))),
       body: Stack(children: [
         Positioned.fill(child: Image.asset(
@@ -95,7 +95,7 @@ class _State extends State<ProfileScreen> {
         textAlign: TextAlign.center,
         style: const TextStyle(
           color: kBurgundy, fontSize: 20,
-          fontFamily: 'Cormorant', fontWeight: FontWeight.w600)),
+          fontFamily: 'Forum', fontWeight: FontWeight.w600)),
       const SizedBox(height: 32),
       SizedBox(width: double.infinity, child: ElevatedButton(
         onPressed: () => Navigator.pushReplacement(context,
@@ -104,11 +104,11 @@ class _State extends State<ProfileScreen> {
           backgroundColor: kBurgundy,
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12))),
+            borderRadius: BorderRadius.circular(30))),
         child: Text(tr('войти / регистрация', 'sign in / register'),
           style: const TextStyle(
             color: Colors.white, fontSize: 18,
-            fontFamily: 'Cormorant', fontWeight: FontWeight.w600)))),
+            fontFamily: 'Forum', fontWeight: FontWeight.w600)))),
     ])));
 
   Widget _user(User user) => SingleChildScrollView(
@@ -137,7 +137,7 @@ class _State extends State<ProfileScreen> {
                 controller: _nameCtrl,
                 style: const TextStyle(
                   color: kBurgundy, fontSize: 20,
-                  fontFamily: 'Cormorant', fontWeight: FontWeight.bold),
+                  fontFamily: 'Forum', fontWeight: FontWeight.bold),
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -159,7 +159,7 @@ class _State extends State<ProfileScreen> {
               Expanded(child: Text(_fs.displayName,
                 style: const TextStyle(
                   color: kBurgundy, fontSize: 26,
-                  fontFamily: 'Cormorant', fontWeight: FontWeight.bold))),
+                  fontFamily: 'Forum', fontWeight: FontWeight.bold))),
               IconButton(
                 icon: Icon(Icons.edit_outlined,
                   color: kBurgundy.withOpacity(0.5), size: 20),
@@ -170,8 +170,8 @@ class _State extends State<ProfileScreen> {
       _card(label: 'EMAIL',
         child: Text(user.email ?? tr('не указан', 'not set'),
           style: TextStyle(
-            color: kBurgundy.withOpacity(0.9), fontSize: 20,
-            fontFamily: 'Cormorant', fontWeight: FontWeight.w500))),
+            color: kBurgundy.withOpacity(0.9), fontSize: 20, 
+            fontFamily: 'Forum', fontWeight: FontWeight.w500))),
 
       const SizedBox(height: 10),
       StreamBuilder<LeaderboardEntry?>(
@@ -181,7 +181,7 @@ class _State extends State<ProfileScreen> {
           child: Text('${snap.data?.score ?? 0}',
             style: const TextStyle(
               color: kBurgundy, fontSize: 32,
-              fontFamily: 'Cormorant', fontWeight: FontWeight.bold)))),
+              fontFamily: 'Forum', fontWeight: FontWeight.bold)))),
 
       const SizedBox(height: 10),
       _card(label: tr('ЯЗЫК', 'LANGUAGE'),
@@ -193,12 +193,42 @@ class _State extends State<ProfileScreen> {
         ])),
 
       const SizedBox(height: 20),
-      _outlineBtn(
-        icon: Icons.refresh_rounded,
-        label: tr('сбросить обучение', 'reset tutorial'),
-        onTap: _resetTutorial),
+      GestureDetector(
+  onTap: _resetTutorial,
+  child: Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(vertical: 14),
+    decoration: BoxDecoration(
+      color: Colors.white.withOpacity(0.6),
+      borderRadius: BorderRadius.circular(30), 
+      border: Border.all(
+        color: const Color(0xFF6B1F2B).withOpacity(0.3),
+      ),
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.refresh_rounded,
+          color: const Color(0xFF6B1F2B).withOpacity(0.7),
+          size: 18,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          tr('сбросить обучение', 'reset tutorial'),
+          style: TextStyle(
+            color: const Color(0xFF6B1F2B).withOpacity(0.8),
+            fontSize: 16,
+            fontFamily: 'Forum',
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    ),
+  ),
+),
       const SizedBox(height: 10),
-      _outlineBtn(
+      _menuStyleButton(
         icon: Icons.logout_rounded,
         label: tr('выйти из аккаунта', 'sign out'),
         onTap: _signOut,
@@ -210,9 +240,8 @@ class _State extends State<ProfileScreen> {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
       decoration: BoxDecoration(
-        // Лёгкий тёплый белый — фон виден через него
-        color: Colors.white.withOpacity(0.78),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white.withOpacity(0.65),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(color: kBurgundy.withOpacity(0.2)),
         boxShadow: [BoxShadow(
           color: Colors.black.withOpacity(0.06),
@@ -263,7 +292,64 @@ class _State extends State<ProfileScreen> {
           const SizedBox(width: 8),
           Text(label, style: TextStyle(
             color: primary ? Colors.white : kBurgundy.withOpacity(0.8),
-            fontSize: 16, fontFamily: 'Cormorant',
+            fontSize: 16, fontFamily: 'Forum',
             fontWeight: FontWeight.w600)),
         ]))));
+        
+ Widget _menuStyleButton({
+  required IconData icon,
+  required String label,
+  required VoidCallback onTap,
+  bool primary = false,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 14),
+
+      decoration: BoxDecoration(
+        color: primary
+            ? const Color(0xFF6B1F2B).withOpacity(0.60)
+            : Colors.white.withOpacity(0.60),
+
+        borderRadius: BorderRadius.circular(30),
+
+        boxShadow: [
+          const BoxShadow(
+            color: Color(0x66000000),
+            blurRadius: 14,
+            offset: Offset(0, 6),
+          ),
+          BoxShadow(
+            color: const Color(0xFF6B1F2B).withOpacity(0.15),
+            blurRadius: 18,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            color: primary ? Colors.white : const Color(0xFF6B1F2B).withOpacity(0.7),
+            size: 18,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: primary ? Colors.white : const Color(0xFF6B1F2B).withOpacity(0.8),
+              fontSize: 16,
+              fontFamily: 'Forum',
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 }
