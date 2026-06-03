@@ -15,7 +15,8 @@ class Parser {
       if (line.startsWith('[')) {
         final sectionName = line.substring(1, line.length - 1).trim();
         final sectionSpec = _spec[sectionName];
-        final section = _readSection(lines, i + 1, sectionSpec);
+        if (sectionSpec == null) continue;
+        final section = _readSection(lines, i + 1, sectionSpec!);
         i = section.pos;
         ret[sectionName] = section.items;
         continue;
@@ -32,7 +33,7 @@ class Parser {
     assert(sectionSpec != null);
     for (var i = 0; lines.length > i; ++i) {
       if (seek == lines[i].trim()) {
-        final section = _readSection(lines, i + 1, sectionSpec);
+        final section = _readSection(lines, i + 1, sectionSpec!);
         return section.items;
       }
     }
@@ -63,6 +64,7 @@ class Parser {
       if (type != ItemType.LocalizableString && locale != null) {
         throw new Error();
       }
+      if (type == null) continue;
       switch (type) {
         case ItemType.Bool:
           ret[key] = valueTrim == 'true'

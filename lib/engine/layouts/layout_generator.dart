@@ -35,7 +35,7 @@ class LayoutGenerator {
 
   // Пирамида — случайные размеры и количество слоёв
   List<List<List<bool>>> _layered() {
-    final layers = 2 + _rng.nextInt(3); // 2-4 слоя
+    final layers = 3 + _rng.nextInt(3); // 3-5 слоёв
     final bW = 6 + _rng.nextInt(2) * 2; // 6-8 ширина — умещается на экране
     final bH = 4 + _rng.nextInt(4);
     final result = <List<List<bool>>>[];
@@ -52,7 +52,7 @@ class LayoutGenerator {
 
   // Симметричная — левая половина зеркалится
   List<List<List<bool>>> _symmetric() {
-    final W = 8 + _rng.nextInt(2) * 2; // 8-10 = 4-5 tiles wide
+    final W = 8 + _rng.nextInt(3) * 2; // 8-12
     final H = 6 + _rng.nextInt(4);
     final layers = 1 + _rng.nextInt(3);
     final result = <List<List<bool>>>[];
@@ -79,7 +79,7 @@ class LayoutGenerator {
   // Острова — 2-4 отдельных блока
   List<List<List<bool>>> _islands() {
     final n = 2 + _rng.nextInt(3);
-    final W = n * 6; // narrower
+    final W = n * 8;
     final H = 8 + _rng.nextInt(4);
     final g = List.generate(H, (_) => List.filled(W, false));
     for (int i = 0; i < n; i++) {
@@ -109,7 +109,7 @@ class LayoutGenerator {
   // Спираль
   List<List<List<bool>>> _spiral() {
     final sz = 6 + _rng.nextInt(4);
-    final W = (sz * 2).clamp(0, 10); final H = sz;
+    final W = sz * 2; final H = sz;
     final g = List.generate(H, (_) => List.filled(W, false));
     bool right = true; int x = 0, y = 0;
     int minX = 0, maxX = W - 2, minY = 0, maxY = H - 1;
@@ -135,7 +135,7 @@ class LayoutGenerator {
 
   // Крест/T/L
   List<List<List<bool>>> _cross() {
-    final W = 8; final H = 8 + _rng.nextInt(3);
+    final W = 12; final H = 8 + _rng.nextInt(3);
     final layers = 1 + _rng.nextInt(3);
     final result = <List<List<bool>>>[];
     for (int z = 0; z < layers; z++) {
@@ -153,7 +153,7 @@ class LayoutGenerator {
   // Ромб
   List<List<List<bool>>> _diamond() {
     final r = 3 + _rng.nextInt(3);
-    final W = (r * 4 + 4).clamp(0, 10); final H = r * 2 + 4;
+    final W = r * 4 + 4; final H = r * 2 + 4;
     final cx = W ~/ 2; final cy = H ~/ 2;
     final layers = 1 + _rng.nextInt(3);
     final result = <List<List<bool>>>[];

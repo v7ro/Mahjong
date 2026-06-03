@@ -391,16 +391,15 @@ class _S extends State<PlayingFieldScreen> with TickerProviderStateMixin {
           ]))
         else
           _body(),
-        if (_shuffling)
+                if (_shuffling)
           Positioned.fill(child: IgnorePointer(child: Container(
-            color: Colors.black54,
-            child: Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-              const Text('🔀', style: TextStyle(fontSize: 44)),
-              const SizedBox(height: 8),
-              Text(tr('Перемешиваем...', 'Shuffling...'),
-                style: const TextStyle(color: Colors.white, fontSize: 20,
-                  fontFamily: 'Aboreto')),
-            ]))))),
+            color: const Color(0x88000000),
+            child: Center(child: Text(
+              tr('Перемешиваем...', 'Shuffling...'),
+              style: const TextStyle(
+                color: Colors.white, fontSize: 22,
+                fontFamily: 'Cormorant', fontWeight: FontWeight.w600,
+                letterSpacing: 1.5)))))),
       ]),
     );
   }
@@ -414,8 +413,13 @@ class _S extends State<PlayingFieldScreen> with TickerProviderStateMixin {
         _badge(Icons.star_rounded, '$_score'),
       ]))),
     Expanded(child: LayoutBuilder(
-      builder: (ctx, box) => Center(
-        child: _boardFitted(box.maxWidth, box.maxHeight)))),
+      builder: (ctx, box) {
+        final board = _boardFitted(box.maxWidth, box.maxHeight);
+        return Center(
+          child: FittedBox(
+            fit: BoxFit.contain,
+            child: board));
+      })),
     SafeArea(top: false, child: Container(
       decoration: BoxDecoration(
         color: const Color(0xAA6B1F2B)),
@@ -452,25 +456,26 @@ class _S extends State<PlayingFieldScreen> with TickerProviderStateMixin {
       behavior: HitTestBehavior.opaque,
       child: Opacity(opacity: enabled ? 1.0 : 0.35,
         child: Icon(icon, color: Colors.white, size: 34)));
-  Widget _boardFitted(double availW, double availH) {
-    // Вычисляем размер плитки чтобы поле влезло на экран
+    Widget _boardFitted(double availW, double availH) {
     final depth = _board.depth;
+    final extra3D = (depth - 1) * k3D;
     final tilesX = (_board.width / 2.0).ceil() + (depth > 1 ? 1 : 0);
     final tilesY = _board.height;
 
-    // Максимальный размер плитки при котором всё влезает
-    final maxTileW = (availW - 24 - depth * k3D) / tilesX;
-    final maxTileH = (availH - 24 - depth * k3D) / tilesY;
+    // availH — высота Expanded виджета, уже без AppBar и нижней панели
+    // Вычитаем только padding и 3D offset
+    final usableW = availW - 24 - extra3D;
+    final usableH = availH - 16 - extra3D; // 16px вертикальный padding
 
-    // Берём минимум но не меньше 60 и не больше 100
-    final tW = maxTileW.clamp(60.0, 100.0);
-    final tH = (tW * (kH / kW)).clamp(75.0, 125.0);
-    final t3D = (tW * (k3D / kW)).clamp(5.0, 10.0);
-    final tR = (tW * (kR / kW)).clamp(4.0, 9.0);
+    final maxByW = usableW / tilesX;
+    final maxByH = usableH / tilesY;
+    final tW = (maxByW < maxByH ? maxByW : maxByH).clamp(55.0, 92.0);
+    final tH = tW * (kH / kW);
+    final t3D = tW * (k3D / kW);
+    final tR = tW * (kR / kW);
 
     return _boardW(tileW: tW, tileH: tH, tile3D: t3D, tileR: tR);
   }
-
   Widget _boardW({double? tileW, double? tileH, double? tile3D, double? tileR}) {
     final tw = tileW ?? kW;
     final th = tileH ?? kH;
@@ -500,12 +505,13 @@ class _S extends State<PlayingFieldScreen> with TickerProviderStateMixin {
   List<Widget> _buildTiles({double tw = kW, double th = kH, double t3 = k3D}) {
     final ws = <Widget>[];
     // Проход 1: все грани — рисуются первыми
+    // При shuffle скрываем грани — они исчезнут вместе с плитками
+    if (_shuffling) return ws;
     for (int z = 0; z < _board.depth; z++) {
       for (int y = 0; y < _board.height; y++) {
         for (int x = 0; x < _board.width; x++) {
           if (_board.tiles[z][y][x] == null) continue;
           final coord = Coordinate(x, y, z);
-          // Не рисуем грани для исчезающих и ошибочных плиток
           if (_wrongCoord == coord) continue;
           if (coord == _matchA || coord == _matchB) continue;
           final pos = _pos(x, y, z, tw: tw, th: th, t3: t3);

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'main_menu.dart';
 import 'login_screen.dart';
-import 'tutorial_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -26,23 +25,9 @@ class _State extends State<SplashScreen> with SingleTickerProviderStateMixin {
   Future<void> _navigate() async {
     if (!mounted) return;
     final user = FirebaseAuth.instance.currentUser;
-
-    // Если пользователь залогинен — сразу в меню, без туториала
     if (user != null) {
       Navigator.pushReplacement(context,
         MaterialPageRoute(builder: (_) => const MainMenuScreen()));
-      return;
-    }
-
-    // Гость — проверяем туториал
-    final tutDone = await isTutorialDone();
-    if (!mounted) return;
-
-    if (!tutDone) {
-      Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (ctx) => TutorialScreen(
-          onDone: () => Navigator.pushReplacement(ctx,
-            MaterialPageRoute(builder: (_) => const LoginScreen())))));
     } else {
       Navigator.pushReplacement(context,
         MaterialPageRoute(builder: (_) => const LoginScreen()));
@@ -56,10 +41,9 @@ class _State extends State<SplashScreen> with SingleTickerProviderStateMixin {
     body: Stack(children: [
       Positioned.fill(child: Image.asset(
         'assets/images/backgrounds/loading.jpeg', fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Container(
-          color: const Color(0xFF1a0a05)))),
+        errorBuilder: (_, __, ___) => Container(color: const Color(0xFF1a0a05)))),
       Positioned(left: 0, right: 0, bottom: 100,
-        child: const Center(child: Text('loading', style: TextStyle(
+        child: const Center(child: Text('MAHJONG', style: TextStyle(
           fontSize: 22, fontFamily: 'Aboreto',
           color: kBurgundy, letterSpacing: 3)))),
       Positioned(left: 32, right: 32, bottom: 72,
